@@ -12,6 +12,14 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
+        if ($request->is('api/*')) {
+            abort(response()->json([
+                'success' => false,
+                'data' => null,
+                'message' => 'Unauthenticated or invalid token.',
+                'code' => 401,
+            ], 401));
+        }
         return $request->expectsJson() ? null : route('login');
     }
 }
