@@ -71,42 +71,189 @@ class ServiceController extends Controller
         return $this->responseWithSuccess($services, 'Active services retrieved successfully',200);
     }
 
+
+    /**
+     * @OA\Post(
+     *     path="/api/services",
+     *     summary="Create a new service",
+     *     tags={"Services"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","price"},
+     *             @OA\Property(property="name", type="string", example="Premium Cleaning"),
+     *             @OA\Property(property="price", type="number", format="float", example=150.50),
+     *             @OA\Property(property="status", type="string", enum={"active","inactive"}, example="active")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Service created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Premium Cleaning"),
+     *                 @OA\Property(property="price", type="number", format="float", example=150.50),
+     *                 @OA\Property(property="status", type="string", example="active"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-08-15T12:00:00Z"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-08-15T12:00:00Z")
+     *             ),
+     *             @OA\Property(property="message", type="string", example="Service created successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation failed",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="name", type="array", @OA\Items(type="string"), example={"The name field is required."}),
+     *                 @OA\Property(property="price", type="array", @OA\Items(type="string"), example={"The price field is required."})
+     *             ),
+     *             @OA\Property(property="message", type="string", example="Validation failed.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated or invalid token.")
+     *         )
+     *     )
+     * )
+     */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'price' => 'required|numeric',
-            'status' => 'in:active,inactive',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors(), 'message' => 'Validation failed.'], 422);
-        }
-
-        $service = Service::create($request->all());
-        return response()->json($service, 201);
+        return $this->serviceService->createService($request->all());
     }
 
+
+    /**
+     * @OA\Put(
+     *     path="/api/services/{id}",
+     *     summary="Update an existing service",
+     *     tags={"Services"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID of the service to update",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","price"},
+     *             @OA\Property(property="name", type="string", example="Premium Cleaning"),
+     *             @OA\Property(property="price", type="number", format="float", example=150.50),
+     *             @OA\Property(property="status", type="string", enum={"active","inactive"}, example="active")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Service updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Premium Cleaning"),
+     *                 @OA\Property(property="price", type="number", format="float", example=150.50),
+     *                 @OA\Property(property="status", type="string", example="active"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-08-15T12:00:00Z"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-08-15T13:00:00Z")
+     *             ),
+     *             @OA\Property(property="message", type="string", example="Service updated successfully.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation failed",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="errors", type="object",
+     *                 @OA\Property(property="name", type="array", @OA\Items(type="string"), example={"The name field is required."})
+     *             ),
+     *             @OA\Property(property="message", type="string", example="Validation failed.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Service not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="message", type="string", example="Service not found.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated or invalid token.")
+     *         )
+     *     )
+     * )
+     */
     public function update(Request $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'price' => 'required|numeric',
-            'status' => 'in:active,inactive',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors(), 'message' => 'Validation failed.'], 422);
-        }
-        
-        $service = Service::findOrFail($id);
-        $service->update($request->all());
-        return response()->json($service);
+        return $this->serviceService->updateService($request->all(), $id);
     }
 
+
+    /**
+     * @OA\Delete(
+     *     path="/api/services/{id}",
+     *     summary="Delete a service",
+     *     tags={"Services"},
+     *     security={{"bearerAuth": {}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the service to delete",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Service deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="message", type="string", example="Service deleted successfully."),
+     *             @OA\Property(property="status", type="integer", example=200)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Service not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="message", type="string", example="Service not found."),
+     *             @OA\Property(property="status", type="integer", example=404)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="data", type="null", example=null),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated or invalid token."),
+     *             @OA\Property(property="status", type="integer", example=401)
+     *         )
+     *     )
+     * )
+     */
     public function destroy($id)
     {
-        Service::destroy($id);
-        return response()->json(['message' => 'Deleted successfully']);
+        return $this->serviceService->deleteService($id);
     }
 }
