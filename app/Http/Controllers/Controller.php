@@ -12,6 +12,13 @@ use Illuminate\Routing\Controller as BaseController;
  *      title="Service Booking API",
  *      description="API Documentation for Service Booking System"
  * )
+ *
+ * @OA\SecurityScheme(
+ *      securityScheme="bearerAuth",
+ *      type="http",
+ *      scheme="bearer",
+ *      bearerFormat="JWT"
+ * )
  */
 class Controller extends BaseController
 {

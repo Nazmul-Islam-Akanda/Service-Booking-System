@@ -107,12 +107,12 @@ class AuthController extends Controller
     }
 
 
-    /**
+   /**
      * @OA\Post(
      *     path="/api/logout",
      *     summary="Logout authenticated user",
      *     tags={"Auth"},
-     *     security={{"sanctum": {}}},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Logout successful",
